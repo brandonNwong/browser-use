@@ -66,3 +66,32 @@ browser-use --help                      # full flags & options
 
 - `rust/` — Core library (`secret`, `hub`, `peer`, `format`, `tools`, `mcp`, `cli`, `ffi`) + C-ABI header (`rust/include/browser_use.h`)
 - `macos/` — SwiftPM menu bar app (`Shell/`, `Kit/`, `DevTools/`, `BrowserUse/`) linking `libbrowser_use.a`
+- `windows/` — Native .NET 8 WPF system-tray app (`BrowserUse/`) linking `browser_use.dll` via `rust/include/browser_use.h`, plus PowerShell dev/build/test scripts (`scripts/`)
+- `extension/` — Companion **Gecko Orange** Firefox/Zen WebExtension (`manifest.json`, `background.js`, `content.js`, popup UI)
+
+## Windows
+
+### Requirements
+
+- Windows 10/11 (x64)
+- Rust 1.80+ (`cargo`) and .NET 8 SDK (or use the isolated `.devenv\` bootstrap below)
+- Firefox or Zen Browser (using the bundled `extension/` Gecko Orange add-on)
+
+### Isolated Dev Environment & Build
+
+To keep your global Windows environment untouched, `dev-env.ps1` installs Rust and the .NET 8 SDK strictly inside `<repo>\.devenv\`:
+
+```powershell
+. .\windows\scripts\dev-env.ps1 -Install   # one-time isolated toolchain setup
+.\windows\scripts\build.ps1                # builds browser-use.exe, browser_use.dll, Browser Use.exe, and bundles extension/ -> build\windows\Browser Use\
+.\windows\scripts\test.ps1                 # cargo test + release bundle + DLL import check + live smoke test
+.\windows\scripts\install.ps1 -AddToPath -StartMenu  # installs to %LOCALAPPDATA%\Programs\Browser Use\
+```
+
+Launch `Browser Use.exe`, load `%LOCALAPPDATA%\Programs\Browser Use\extension\manifest.json` in Zen/Firefox (`about:debugging` → **This Zen** → **Load Temporary Add-on…**), pair using the Gecko Orange toolbar icon (or `await OrangeBridge.setSecret(...)`), and point your MCP client at the bundled CLI binary:
+
+```text
+%LOCALAPPDATA%\Programs\Browser Use\browser-use.exe
+```
+
+See [windows/README.md](windows/README.md) for full Windows installation, Firefox/Zen pairing, MCP configuration, CLI usage, and troubleshooting instructions.
