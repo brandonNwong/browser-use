@@ -15,3 +15,9 @@ xcuserdata/
 *.swp
 /.idea/
 /.vscode/
+
+# Windows build artifacts and isolated local dev environment
+/.devenv/
+/windows/**/bin/
+/windows/**/obj/
+/BrowserUse-windows-x64.zip
