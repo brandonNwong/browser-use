@@ -11,8 +11,9 @@ use std::sync::{Mutex, MutexGuard};
 
 use browser_use::secret::{
     load_secret, load_secret_info, secret_from_environment, secret_path, secrets_match,
-    SECRET_DIR_MODE, SECRET_FILE_MODE,
 };
+#[cfg(unix)]
+use browser_use::secret::{SECRET_DIR_MODE, SECRET_FILE_MODE};
 
 const TEST_SECRET: &str = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 
@@ -27,6 +28,7 @@ fn lock_environment() -> MutexGuard<'static, ()> {
 /// Set a throwaway `HOME`, clear `ORANGE_SECRET`, and restore both on drop.
 struct EnvGuard {
     previous_home: Option<OsString>,
+    previous_userprofile: Option<OsString>,
     previous_secret: Option<OsString>,
 }
 
@@ -34,9 +36,23 @@ impl EnvGuard {
     fn isolate(home: &Path) -> Self {
         let guard = Self {
             previous_home: std::env::var_os("HOME"),
+            previous_userprofile: std::env::var_os("USERPROFILE"),
             previous_secret: std::env::var_os("ORANGE_SECRET"),
         };
         std::env::set_var("HOME", home);
+        std::env::remove_var("ORANGE_SECRET");
+        guard
+    }
+
+    #[cfg(windows)]
+    fn isolate_without_home(userprofile: &Path) -> Self {
+        let guard = Self {
+            previous_home: std::env::var_os("HOME"),
+            previous_userprofile: std::env::var_os("USERPROFILE"),
+            previous_secret: std::env::var_os("ORANGE_SECRET"),
+        };
+        std::env::remove_var("HOME");
+        std::env::set_var("USERPROFILE", userprofile);
         std::env::remove_var("ORANGE_SECRET");
         guard
     }
@@ -52,6 +68,10 @@ impl Drop for EnvGuard {
             Some(home) => std::env::set_var("HOME", home),
             None => std::env::remove_var("HOME"),
         }
+        match &self.previous_userprofile {
+            Some(profile) => std::env::set_var("USERPROFILE", profile),
+            None => std::env::remove_var("USERPROFILE"),
+        }
         match &self.previous_secret {
             Some(secret) => std::env::set_var("ORANGE_SECRET", secret),
             None => std::env::remove_var("ORANGE_SECRET"),
@@ -59,6 +79,7 @@ impl Drop for EnvGuard {
     }
 }
 
+#[cfg(unix)]
 fn permissions_mode(path: &Path) -> u32 {
     use std::os::unix::fs::PermissionsExt as _;
     std::fs::metadata(path)
@@ -67,6 +88,15 @@ fn permissions_mode(path: &Path) -> u32 {
         .mode()
         & 0o777
 }
+
+#[cfg(unix)]
+fn assert_secret_modes(dir: &Path, path: &Path) {
+    assert_eq!(permissions_mode(dir), SECRET_DIR_MODE);
+    assert_eq!(permissions_mode(path), SECRET_FILE_MODE);
+}
+
+#[cfg(not(unix))]
+fn assert_secret_modes(_dir: &Path, _path: &Path) {}
 
 /// `~/.orange-mcp` inside the temporary HOME.
 fn secret_dir(home: &Path) -> PathBuf {
@@ -114,8 +144,7 @@ async fn creates_0600_secret_inside_0700_directory_and_is_stable() {
 
     let path = secret_path();
     let dir = secret_dir(temp.path());
-    assert_eq!(permissions_mode(&dir), SECRET_DIR_MODE);
-    assert_eq!(permissions_mode(&path), SECRET_FILE_MODE);
+    assert_secret_modes(&dir, &path);
     assert_eq!(
         std::fs::read_to_string(&path).unwrap().trim(),
         secret,
@@ -158,7 +187,16 @@ async fn rejects_symlinked_secret_file() {
     let target = temp.path().join("elsewhere-secret");
     std::fs::write(&target, format!("{TEST_SECRET}\n")).unwrap();
     let link = dir.join("secret");
+    #[cfg(unix)]
     std::os::unix::fs::symlink(&target, &link).unwrap();
+    #[cfg(windows)]
+    if let Err(error) = std::os::windows::fs::symlink_file(&target, &link) {
+        if error.kind() == std::io::ErrorKind::PermissionDenied {
+            eprintln!("skipping Windows symlink test without Developer Mode / symlink privilege: {error}");
+            return;
+        }
+        panic!("symlink_file failed unexpectedly: {error}");
+    }
 
     let error = load_secret().await.expect_err("symlinks must be rejected");
     assert!(error.0.contains("symlink"), "unexpected error: {error}");
@@ -273,5 +311,21 @@ async fn orange_secret_overrides_disk_and_never_creates_the_file() {
     assert!(!secret_from_environment());
     let secret = load_secret().await.expect("falls back to the file");
     assert_eq!(secret.len(), 64);
-    assert_eq!(permissions_mode(&secret_path()), SECRET_FILE_MODE);
+    assert_secret_modes(&secret_dir(temp.path()), &secret_path());
+}
+
+#[cfg(windows)]
+#[tokio::test]
+async fn falls_back_to_userprofile_when_home_is_unset() {
+    let _lock = lock_environment();
+    let temp = tempfile::tempdir().expect("tempdir");
+    let _env = EnvGuard::isolate_without_home(temp.path());
+
+    let path = secret_path();
+    assert!(path.is_absolute());
+    assert_eq!(path, temp.path().join(".orange-mcp").join("secret"));
+
+    let secret = load_secret().await.expect("create secret under USERPROFILE");
+    assert_eq!(secret.len(), 64);
+    assert_eq!(load_secret().await.unwrap(), secret);
 }

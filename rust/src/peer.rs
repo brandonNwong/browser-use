@@ -84,12 +84,17 @@ impl std::fmt::Display for PeerError {
 
 impl std::error::Error for PeerError {}
 
+#[cfg(windows)]
+const APP_LAUNCH_NAME: &str = "Browser Use";
+#[cfg(not(windows))]
+const APP_LAUNCH_NAME: &str = "Browser Use.app";
+
 impl PeerError {
     fn offline(port: u16) -> Self {
         Self::new(
             PeerErrorKind::Offline,
             format!(
-                "Browser Use is not running at ws://{HUB_HOST}:{port}. Launch Browser Use.app first."
+                "Browser Use is not running at ws://{HUB_HOST}:{port}. Launch {APP_LAUNCH_NAME} first."
             ),
         )
     }

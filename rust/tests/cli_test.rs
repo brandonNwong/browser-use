@@ -11,7 +11,9 @@ mod common;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use common::{start_hub, start_hub_with_secret, FakeReply, TestServer, TEST_SECRET};
+use common::{
+    start_hub, start_hub_with_secret, FakeReply, TestServer, APP_LAUNCH_NAME, TEST_SECRET,
+};
 use serde_json::{json, Value};
 
 // ── Harness ──────────────────────────────────────────────────────────────
@@ -258,7 +260,7 @@ async fn status_offline_exits_one_with_the_peer_message() {
     assert!(output.stdout.contains("Extension: unknown"));
     assert!(
         output.stdout.contains(&format!(
-            "Browser Use is not running at ws://127.0.0.1:{port}. Launch Browser Use.app first."
+            "Browser Use is not running at ws://127.0.0.1:{port}. Launch {APP_LAUNCH_NAME} first."
         )),
         "missing actionable peer message: {:?}",
         output.stdout
@@ -272,7 +274,7 @@ async fn status_offline_exits_one_with_the_peer_message() {
     assert_eq!(
         snap.stderr,
         format!(
-            "Error: Browser Use is not running at ws://127.0.0.1:{port}. Launch Browser Use.app first.\n"
+            "Error: Browser Use is not running at ws://127.0.0.1:{port}. Launch {APP_LAUNCH_NAME} first.\n"
         )
     );
 }

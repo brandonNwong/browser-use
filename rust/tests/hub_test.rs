@@ -533,7 +533,8 @@ async fn peer_first_connect_refused_is_actionable_offline_error() {
     assert_eq!(
         error.message,
         format!(
-            "Browser Use is not running at ws://127.0.0.1:{port}. Launch Browser Use.app first."
+            "Browser Use is not running at ws://127.0.0.1:{port}. Launch {} first.",
+            common::APP_LAUNCH_NAME
         )
     );
     // First-connect refusal must not burn the (post-connect) retry window.
@@ -603,7 +604,9 @@ async fn peer_reconnects_through_hub_restart_then_times_out_the_retry_window() {
         .await
         .unwrap_err();
     assert_eq!(error.kind, PeerErrorKind::Offline);
-    assert!(error.message.contains("Launch Browser Use.app first."));
+    assert!(error
+        .message
+        .contains(&format!("Launch {} first.", common::APP_LAUNCH_NAME)));
     assert!(
         started.elapsed() >= Duration::from_millis(2_000),
         "retry window did not run: {:?}",

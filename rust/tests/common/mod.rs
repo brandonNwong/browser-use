@@ -33,6 +33,11 @@ use browser_use::hub::{Hub, HubOptions};
 /// secret, so `secrets_match` length checks behave realistically).
 pub const TEST_SECRET: &str = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 
+#[cfg(windows)]
+pub const APP_LAUNCH_NAME: &str = "Browser Use";
+#[cfg(not(windows))]
+pub const APP_LAUNCH_NAME: &str = "Browser Use.app";
+
 /// The test secret as an owned `String`.
 pub fn test_secret() -> String {
     TEST_SECRET.to_string()

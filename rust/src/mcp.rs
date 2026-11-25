@@ -297,7 +297,11 @@ async fn shutdown_signal() {
             _ = terminate.recv() => {}
         }
     }
-    #[cfg(not(unix))]
+    #[cfg(windows)]
+    {
+        let _ = tokio::signal::ctrl_c().await;
+    }
+    #[cfg(not(any(unix, windows)))]
     {
         std::future::pending::<()>().await;
     }

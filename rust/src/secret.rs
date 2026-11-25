@@ -55,10 +55,24 @@ pub fn secret_path() -> PathBuf {
 }
 
 fn home_dir() -> PathBuf {
-    match std::env::var_os("HOME") {
-        Some(value) if !value.is_empty() => PathBuf::from(value),
-        _ => std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")),
+    if let Some(value) = std::env::var_os("HOME").filter(|value| !value.is_empty()) {
+        return PathBuf::from(value);
     }
+    #[cfg(windows)]
+    {
+        if let Some(value) = std::env::var_os("USERPROFILE").filter(|value| !value.is_empty()) {
+            return PathBuf::from(value);
+        }
+        if let (Some(drive), Some(path)) = (
+            std::env::var_os("HOMEDRIVE").filter(|value| !value.is_empty()),
+            std::env::var_os("HOMEPATH").filter(|value| !value.is_empty()),
+        ) {
+            let mut combined = PathBuf::from(drive);
+            combined.push(path);
+            return combined;
+        }
+    }
+    std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
 }
 
 /// The trimmed, non-empty `ORANGE_SECRET` value when the environment supplies
@@ -155,9 +169,15 @@ fn generate_secret() -> String {
     random_hex(SECRET_BYTES)
 }
 
+#[cfg(unix)]
 fn set_mode_best_effort(path: &Path, mode: u32) {
     use std::os::unix::fs::PermissionsExt as _;
     let _ = std::fs::set_permissions(path, std::fs::Permissions::from_mode(mode));
+}
+
+#[cfg(not(unix))]
+fn set_mode_best_effort(_path: &Path, _mode: u32) {
+    // On Windows, %USERPROFILE%\.orange-mcp inherits per-user NTFS ACLs.
 }
 
 /// Read after a concurrent creator won the hard-link race. A winning writer
@@ -211,15 +231,16 @@ fn create_secret_file(path: &Path) -> Result<String, SecretError> {
 
     let result = (|| -> Result<String, SecretError> {
         {
-            use std::os::unix::fs::OpenOptionsExt as _;
-            let mut file = std::fs::OpenOptions::new()
-                .write(true)
-                .create_new(true)
-                .mode(SECRET_FILE_MODE)
-                .open(&temp_path)
-                .map_err(|error| {
-                    SecretError::new(format!("Unable to create {}: {error}", temp_path.display()))
-                })?;
+            let mut options = std::fs::OpenOptions::new();
+            options.write(true).create_new(true);
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::OpenOptionsExt as _;
+                options.mode(SECRET_FILE_MODE);
+            }
+            let mut file = options.open(&temp_path).map_err(|error| {
+                SecretError::new(format!("Unable to create {}: {error}", temp_path.display()))
+            })?;
             file.write_all(format!("{secret}\n").as_bytes())
                 .and_then(|()| file.sync_all())
                 .map_err(|error| {

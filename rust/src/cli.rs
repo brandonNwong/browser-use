@@ -151,7 +151,14 @@ async fn status_command(argv: &[String]) -> Result<i32, String> {
 
     // The legacy CLI connected with a 1.5 s timeout so `status` fails fast when
     // the app is closed; the default lazily-connecting peer timeout is 5 s.
-    let peer = PeerClient::with_connect_timeout(port, secret, 1_500);
+    // On Windows, loopback `connect()` retries SYN packets for ~2 s before
+    // returning WSAECONNREFUSED, so allow 3.5 s there to avoid false timeouts.
+    #[cfg(windows)]
+    const STATUS_CONNECT_TIMEOUT_MS: u64 = 3_500;
+    #[cfg(not(windows))]
+    const STATUS_CONNECT_TIMEOUT_MS: u64 = 1_500;
+
+    let peer = PeerClient::with_connect_timeout(port, secret, STATUS_CONNECT_TIMEOUT_MS);
     let outcome = peer.status().await;
     peer.close().await;
 

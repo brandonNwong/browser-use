@@ -696,7 +696,8 @@ async fn offline_hub_returns_actionable_error_without_crashing() {
     assert_eq!(
         text,
         format!(
-            "Error: Browser Use is not running at ws://127.0.0.1:{port}. Launch Browser Use.app first."
+            "Error: Browser Use is not running at ws://127.0.0.1:{port}. Launch {} first.",
+            common::APP_LAUNCH_NAME
         )
     );
 
