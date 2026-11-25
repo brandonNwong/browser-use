@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" fill="none">
+  <defs>
+    <linearGradient id="bg-grad" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22232A"/>
+      <stop offset="55%" stop-color="#17181D"/>
+      <stop offset="100%" stop-color="#0F1014"/>
+    </linearGradient>
+    <linearGradient id="white-grad" x1="186" y1="186" x2="838" y2="838" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#D6D8E0"/>
+    </linearGradient>
+    <linearGradient id="orange-grad" x1="404" y1="404" x2="620" y2="620" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FF8A3D"/>
+      <stop offset="100%" stop-color="#FF5200"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1024" height="1024" rx="224" fill="url(#bg-grad)"/>
+  <path d="M 826.89 427.62 A 326 326 0 1 1 698.99 244.96" stroke="url(#white-grad)" stroke-width="56" stroke-linecap="round"/>
+  <path d="M 305.29 567.39 A 214 214 0 1 1 389.25 687.30" stroke="url(#white-grad)" stroke-width="56" stroke-linecap="round"/>
+  <circle cx="512" cy="512" r="108" fill="url(#orange-grad)"/>
+</svg>

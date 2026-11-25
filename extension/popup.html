@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Gecko Orange — Browser Use</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --surface: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --accent: #ff6b1a;
+      --accent-hover: #e85a0c;
+      --ok: #16a34a;
+      --warn: #d97706;
+      --err: #dc2626;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #17181d;
+        --surface: #22232a;
+        --border: #333642;
+        --text: #f1f5f9;
+        --muted: #94a3b8;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 14px;
+      width: 340px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 13px;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .brand img {
+      width: 22px;
+      height: 22px;
+      border-radius: 5px;
+    }
+    .pill {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(100, 116, 139, 0.16);
+      color: var(--muted);
+    }
+    .pill.connected { background: rgba(22, 163, 74, 0.16); color: var(--ok); }
+    .pill.connecting { background: rgba(217, 119, 6, 0.16); color: var(--warn); }
+    .pill.error { background: rgba(220, 38, 38, 0.16); color: var(--err); }
+
+    .status-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: var(--muted);
+      word-break: break-word;
+    }
+    .status-box strong { color: var(--text); }
+
+    label {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    input {
+      width: 100%;
+      padding: 7px 9px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+    input:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: -1px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 2px;
+    }
+    button {
+      flex: 1;
+      padding: 7px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+    button.primary:hover { background: var(--accent-hover); }
+    button:disabled { opacity: 0.6; cursor: default; }
+
+    .hint {
+      margin-top: 10px;
+      font-size: 11px;
+      line-height: 1.4;
+      color: var(--muted);
+    }
+    .feedback {
+      margin-top: 8px;
+      font-size: 12px;
+      min-height: 16px;
+    }
+    .feedback.ok { color: var(--ok); }
+    .feedback.err { color: var(--err); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="brand">
+      <img src="icon.svg" alt="" />
+      <span>Gecko Orange</span>
+    </div>
+    <span id="statusPill" class="pill">Checking…</span>
+  </div>
+
+  <div id="statusBox" class="status-box">Loading bridge status…</div>
+
+  <form id="configForm">
+    <label for="secretInput">Shared Secret (or Zen Setup Command)</label>
+    <input id="secretInput" type="password" autocomplete="off" placeholder="Paste secret or await OrangeBridge.setSecret(&quot;...&quot;)" />
+
+    <label for="urlInput">Hub WebSocket URL</label>
+    <input id="urlInput" type="text" autocomplete="off" placeholder="ws://127.0.0.1:19455/" />
+
+    <div class="actions">
+      <button id="saveBtn" type="submit" class="primary">Save &amp; Connect</button>
+      <button id="reconnectBtn" type="button">Reconnect</button>
+    </div>
+  </form>
+
+  <div id="feedback" class="feedback"></div>
+
+  <div class="hint">
+    Copy the secret or setup command from the <strong>Browser Use</strong> tray menu (or <code>browser-use secret</code>) and paste it above.
+    Console setup via <code>await OrangeBridge.setSecret(...)</code> also works.
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
