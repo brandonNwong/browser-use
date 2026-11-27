@@ -10,6 +10,6 @@ just build
 echo "==> Packaging release..."
 # Remove old zip if it exists
 rm -f BrowserUse.zip
-zip -r BrowserUse.zip build/Browser\ Use.app
+(cd build && zip -r ../BrowserUse.zip "Browser Use.app" extension gecko-orange.xpi)
 
 echo "==> Release artifact created: BrowserUse.zip"

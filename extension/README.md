@@ -14,12 +14,17 @@ Companion Manifest V2 WebExtension for [browser-use](../README.md) implementing 
 
 ### Quick Load (Zen & Firefox Release)
 1. Open `about:debugging` → **This Zen** (or **This Firefox**).
-2. Click **Load Temporary Add-on…** and choose `extension/manifest.json`.
+2. Click **Load Temporary Add-on…** and choose `manifest.json`:
+   - **macOS:** `~/Library/Application Support/browser-use/extension/manifest.json` (installed by `just install` or `just install-extension`, or revealed via **Open Extension Folder** in Browser Use)
+   - **Windows:** `%LOCALAPPDATA%\Programs\Browser Use\extension\manifest.json` (or revealed via **Open Extension Folder** in Browser Use)
+   - **Source checkout:** `<repo>/extension/manifest.json`
 3. Click the **Gecko Orange** toolbar icon, paste your Browser Use secret or setup command, and click **Save & Connect**.
 
 ### Permanent Install (Self-Signed `.xpi` for Zen / Firefox Release)
-1. Package the files inside `extension/` as a `.xpi` zip (on Windows, `.\windows\scripts\build.ps1` generates `build\windows\Browser Use\gecko-orange.xpi` automatically).
-2. Submit the `.xpi` to [Mozilla Add-ons Developer Hub](https://addons.mozilla.org/developers/) as **On your own** (unlisted self-distribution) for free automated signing.
+1. Package `gecko-orange.xpi` from `extension/`:
+   - **macOS:** `./macos/Scripts/package-extension.sh` (or `just extension` / `just build`) writes `build/gecko-orange.xpi`; `just install` / `just install-extension` installs it to `~/Library/Application Support/browser-use/gecko-orange.xpi`.
+   - **Windows:** `.\windows\scripts\build.ps1` generates `build\windows\Browser Use\gecko-orange.xpi` automatically.
+2. Submit `gecko-orange.xpi` to [Mozilla Add-ons Developer Hub](https://addons.mozilla.org/developers/) as **On your own** (unlisted self-distribution) for free automated signing.
 3. Drag-and-drop the signed `.xpi` into Zen or install via `about:addons` → **Install Add-on From File…**.
 
 ## Console API

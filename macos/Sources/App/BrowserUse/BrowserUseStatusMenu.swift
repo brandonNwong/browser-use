@@ -40,6 +40,9 @@ final class BrowserUseStatusMenu: StatusMenuProviding {
         items.append(.separator())
         items.append(copySecretItem())
         items.append(copySetupCommandItem())
+        items.append(ActionMenuItem(title: "Open Extension Folder") {
+            BrowserUsePaths.openExtensionFolder()
+        })
 
         let restart = ActionMenuItem(title: "Restart Hub") { [model] in
             Task { await model.restartHub() }

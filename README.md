@@ -23,14 +23,16 @@ Browser Use.app ── in-process hub ── ws://127.0.0.1:19455 ── Firefox
 - macOS 15+, Swift 6 (Xcode 16+)
 - Rust 1.80+ (`cargo`)
 - [`just`](https://github.com/casey/just)
-- Firefox or Zen configured to connect over the local WebSocket protocol (`3.0.0`)
+- Firefox or Zen Browser (using the bundled `extension/` Gecko Orange add-on, protocol `3.0.0`)
 
 ## Build & Install
 
 ```bash
-just install        # release build -> /Applications/Browser Use.app + ~/.local/bin/browser-use
-just build          # release build only -> build/Browser Use.app
-just test           # cargo test + release bundle + app sanity checks
+just install            # release build -> /Applications/Browser Use.app, ~/.local/bin/browser-use, and ~/Library/Application Support/browser-use/
+just build              # release build only -> build/Browser Use.app + build/extension/ + build/gecko-orange.xpi
+just extension          # package extension only -> build/extension/ + build/gecko-orange.xpi
+just install-extension  # install extension only -> ~/Library/Application Support/browser-use/
+just test               # cargo test + release bundle + app sanity checks
 ```
 
 Dev loop:
@@ -42,13 +44,18 @@ just dev-cli        # point ~/.local/bin/browser-use at target/debug/browser-use
 
 Other recipes: `just verify`, `just verify-menu`, `just snapshot`, `just icons`, `just stop`, `just clean`.
 
-## Usage
+## Usage (macOS)
 
-Launch the app (`open "/Applications/Browser Use.app"` or `just reload`), then point your MCP client at the bundled binary:
+1. Launch the app (`open "/Applications/Browser Use.app"` or `just reload`).
+2. Load `~/Library/Application Support/browser-use/extension/manifest.json` in Zen/Firefox (`about:debugging` → **This Zen** → **Load Temporary Add-on…**, or click **Open Extension Folder** in Browser Use to reveal it in Finder; for permanent installation, submit `gecko-orange.xpi` for free Mozilla self-signing).
+3. Pair using the **Gecko Orange** toolbar icon (or `await OrangeBridge.setSecret(...)` in the extension console).
+4. Point your MCP client at the bundled binary:
 
 ```bash
 "/Applications/Browser Use.app/Contents/MacOS/browser-use"
 ```
+
+See [macos/README.md](macos/README.md) for full macOS installation, Zen/Firefox pairing, MCP configuration, CLI usage, and troubleshooting instructions.
 
 ### CLI
 

@@ -6,6 +6,7 @@ Cargo.lock.orig
 /build/
 /macos/.build/
 /macos/.swiftpm/
+/BrowserUse.zip
 *.xcodeproj
 *.xcworkspace
 xcuserdata/

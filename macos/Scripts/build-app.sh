@@ -6,6 +6,8 @@
 # Output (matching the root justfile and README):
 #   <repo-root>/build/<APP_NAME>.app/Contents/MacOS/<APP_NAME>
 #   <repo-root>/build/<APP_NAME>.app/Contents/MacOS/browser-use
+#   <repo-root>/build/<APP_NAME>.app/Contents/Resources/extension/
+#   <repo-root>/build/<APP_NAME>.app/Contents/Resources/gecko-orange.xpi
 # SwiftPM's own scratch directory stays inside the package at macos/.build/.
 #
 # The bundle matters for three reasons:
@@ -119,6 +121,13 @@ chmod +x "${APP}/Contents/MacOS/browser-use"
 # vector menu bar template image loaded by StatusItemController.
 cp "${ROOT}/Resources/AppIcon.icns" "${APP}/Contents/Resources/AppIcon.icns"
 cp "${ROOT}/Resources/MenuBarIcon.svg" "${APP}/Contents/Resources/MenuBarIcon.svg"
+if [[ -f "${REPO_ROOT}/README.md" ]]; then
+  cp "${REPO_ROOT}/README.md" "${APP}/Contents/Resources/README.md"
+fi
+if [[ -f "${REPO_ROOT}/extension/manifest.json" ]]; then
+  "${ROOT}/Scripts/package-extension.sh" "${APP}/Contents/Resources"
+  "${ROOT}/Scripts/package-extension.sh" "${BUILD_DIR}"
+fi
 printf 'APPL????' > "${APP}/Contents/PkgInfo"
 
 sed -e "s|__APP_NAME__|$(subst "${APP_NAME}")|g" \

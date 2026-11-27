@@ -86,8 +86,19 @@ install: build
     mkdir -p "$HOME/.local/bin"
     ln -sfn "/Applications/{{APP_NAME}}.app/Contents/MacOS/browser-use" \
         "$HOME/.local/bin/browser-use"
+    ./macos/Scripts/package-extension.sh --install
     echo "==> installed /Applications/{{APP_NAME}}.app"
     echo "==> ~/.local/bin/browser-use -> /Applications/{{APP_NAME}}.app/Contents/MacOS/browser-use"
+    echo "==> extension -> $HOME/Library/Application Support/browser-use/extension/manifest.json"
+    echo "==> xpi       -> $HOME/Library/Application Support/browser-use/gecko-orange.xpi"
+
+# Package the Gecko Orange Zen/Firefox extension into build/extension/ and build/gecko-orange.xpi.
+extension:
+    ./macos/Scripts/package-extension.sh
+
+# Install the Gecko Orange Zen/Firefox extension into ~/Library/Application Support/browser-use/.
+install-extension:
+    ./macos/Scripts/package-extension.sh --install
 
 # Re-render the multi-resolution app icon from Resources/AppIcon.svg (the menu
 # bar mark stays vector and is loaded from Resources/MenuBarIcon.svg).

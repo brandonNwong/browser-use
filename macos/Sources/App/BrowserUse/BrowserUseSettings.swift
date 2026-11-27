@@ -199,7 +199,14 @@ struct ConnectionSettings: View {
                     Spacer()
                 }
 
-                Text("Paste the setup command once into Zen: about:debugging → This Firefox → Gecko Orange → Inspect → Console.")
+                HStack(spacing: 8) {
+                    Button("Open Extension Folder") {
+                        BrowserUsePaths.openExtensionFolder()
+                    }
+                    Spacer()
+                }
+
+                Text("Load extension/manifest.json in Zen (about:debugging → This Zen → Load Temporary Add-on…), then click the Gecko Orange toolbar icon (or Inspect → Console) and paste the secret or setup command.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

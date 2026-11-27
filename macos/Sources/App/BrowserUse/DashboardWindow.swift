@@ -42,6 +42,9 @@ struct DashboardWindow: View {
                     Button("Copy Zen Setup Command") {
                         Task { await model.copyZenSetupCommand() }
                     }
+                    Button("Reveal Gecko Orange Extension") {
+                        BrowserUsePaths.openExtensionFolder()
+                    }
                     Divider()
                     Button("Reveal Hub Logs") { BrowserUsePaths.openLogs() }
                 } label: {
@@ -139,7 +142,7 @@ struct DashboardWindow: View {
             Label("Finish connecting Zen", systemImage: "wand.and.stars")
                 .font(.headline)
 
-            Text("In Zen open **about:debugging → This Firefox → Gecko Orange → Inspect → Console**, then paste the setup command. The extension reconnects automatically.")
+            Text("1. In Zen open **about:debugging → This Zen → Load Temporary Add-on…** and select **extension/manifest.json**.\n2. Click the **Gecko Orange** toolbar icon (or **Inspect → Console**), paste your setup command or secret, and connect.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -149,6 +152,9 @@ struct DashboardWindow: View {
                     Task { await model.copyZenSetupCommand() }
                 }
                 .buttonStyle(.borderedProminent)
+                Button("Open Extension Folder") {
+                    BrowserUsePaths.openExtensionFolder()
+                }
                 Button("Copy Shared Secret") {
                     Task { await model.copySecret() }
                 }
